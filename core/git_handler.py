@@ -5,7 +5,6 @@ import git
 class GitHandler:
     SUPPORTED_EXTENSIONS = {".php", ".py", ".js", ".ts", ".go", ".java", ".c", ".cpp"}
 
-    # Path/Folder bawaan framework/vendor yang wajib diabaikan
     IGNORED_PATHS = {
         "vendor/",
         "system/",
@@ -28,12 +27,10 @@ class GitHandler:
 
         normalized_path = file_path.replace("\\", "/")
 
-        # Blacklist folder core / vendor
         for ignored in self.IGNORED_PATHS:
             if normalized_path.startswith(ignored) or f"/{ignored}" in normalized_path:
                 return False
 
-        # Whitelist ekstensi
         return Path(file_path).suffix in self.SUPPORTED_EXTENSIONS
 
     def _safe_decode_patch(self, diff_content: bytes | str | None) -> str:
@@ -45,51 +42,54 @@ class GitHandler:
 
     def get_working_tree_diff(self) -> list[dict[str, str]]:
         diff_files: list[dict[str, str]] = []
-        diffs = self.repo.index.diff(None)  # Unstaged changes
+        seen_paths: set[str] = set()
 
-        for diff_item in diffs:
+        # 1. Cek file yang dimodifikasi (Unstaged Modified)
+        for diff_item in self.repo.index.diff(None):
             file_path = diff_item.b_path or diff_item.a_path
-            if self._is_valid_target_file(file_path):
+            if file_path and self._is_valid_target_file(file_path):
                 patch_text = self._safe_decode_patch(diff_item.diff)
                 if patch_text.strip():
                     diff_files.append(
                         {"file_path": str(file_path), "patch": patch_text}
                     )
+                    seen_paths.add(str(file_path))
+
+        # 2. Cek file baru yang belum di-track (Untracked)
+        for untracked in self.repo.untracked_files:
+            if self._is_valid_target_file(untracked) and untracked not in seen_paths:
+                full_path = self.repo_path / untracked
+                try:
+                    content = full_path.read_text(encoding="utf-8", errors="replace")
+                    if content.strip():
+                        diff_files.append(
+                            {"file_path": str(untracked), "patch": content}
+                        )
+                        seen_paths.add(str(untracked))
+                except Exception:
+                    pass
 
         return diff_files
 
-    def get_commit_diff(
-        self, commit_a: str, commit_b: str = "HEAD"
-    ) -> list[dict[str, str]]:
+    def get_last_commit_diff(self) -> list[dict[str, str]]:
         diff_files: list[dict[str, str]] = []
-        target_a = self.repo.commit(commit_a)
-        target_b = self.repo.commit(commit_b)
+        try:
+            commit_head = self.repo.head.commit
+            if commit_head.parents:
+                parent = commit_head.parents[0]
+                diffs = parent.diff(commit_head, create_patch=True)
+            else:
+                diffs = commit_head.diff(git.NULL_TREE, create_patch=True)
 
-        diffs = target_a.diff(target_b, create_patch=True)
-
-        for diff_item in diffs:
-            file_path = diff_item.b_path or diff_item.a_path
-            if self._is_valid_target_file(file_path):
-                patch_text = self._safe_decode_patch(diff_item.diff)
-                if patch_text.strip():
-                    diff_files.append(
-                        {"file_path": str(file_path), "patch": patch_text}
-                    )
-
-        return diff_files
-
-    def get_initial_commit_diff(self) -> list[dict[str, str]]:
-        diff_files: list[dict[str, str]] = []
-        commit = self.repo.head.commit
-        diffs = commit.diff(git.NULL_TREE, create_patch=True)
-
-        for diff_item in diffs:
-            file_path = diff_item.b_path or diff_item.a_path
-            if self._is_valid_target_file(file_path):
-                patch_text = self._safe_decode_patch(diff_item.diff)
-                if patch_text.strip():
-                    diff_files.append(
-                        {"file_path": str(file_path), "patch": patch_text}
-                    )
+            for diff_item in diffs:
+                file_path = diff_item.b_path or diff_item.a_path
+                if self._is_valid_target_file(file_path):
+                    patch_text = self._safe_decode_patch(diff_item.diff)
+                    if patch_text.strip():
+                        diff_files.append(
+                            {"file_path": str(file_path), "patch": patch_text}
+                        )
+        except Exception:
+            pass
 
         return diff_files

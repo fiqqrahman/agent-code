@@ -18,26 +18,32 @@ def main():
 
         AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
+        # Pindai perubahan lokal (Modified & Untracked)
         diff_files = git_engine.get_working_tree_diff()
+
+        # Fallback ke commit terakhir jika working tree bersih
+        if not diff_files:
+            AuditFormatter.print_info(
+                "Working tree bersih. Memeriksa file pada COMMIT TERAKHIR..."
+            )
+            diff_files = git_engine.get_last_commit_diff()
 
         if not diff_files:
             AuditFormatter.print_info(
-                "Working tree bersih. Tidak ada file yang sedang diubah."
+                "Tidak ada file yang diubah atau baru di-commit untuk di-audit."
             )
             return
 
         AuditFormatter.print_info(
-            f"Ditemukan {len(diff_files)} berkas yang baru diubah. Memulai audit...\n"
+            f"Ditemukan {len(diff_files)} file yang perlu di-audit.\n"
         )
 
         for item in diff_files:
-            AuditFormatter.print_info(f"==> Modifikasi Terdeteksi: {item['file_path']}")
+            AuditFormatter.print_info(f"==> Mengaudit File: {item['file_path']}")
             report = auditor.audit_source_code(
                 source_code=item["patch"], file_name=item["file_path"]
             )
-            AuditFormatter.print_section(
-                f"MODIFIED FILE AUDIT: {item['file_path']}", report
-            )
+            AuditFormatter.print_section(f"AUDIT REPORT: {item['file_path']}", report)
 
     except KeyboardInterrupt:
         print("\n")
