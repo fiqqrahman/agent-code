@@ -8,6 +8,16 @@ Pengembang: fiqq.rahman
 
 ---
 
+## Lisensi
+
+Proyek ini dilindungi di bawah **Educational & AI Research License**. Hak Cipta (C) 2026 **fiqq.rahman**. Hak Cipta Dilindungi Undang-Undang (*All Rights Reserved*).
+
+### Rincian Ketentuan Lisensi:
+1. **Khusus Edukasi & Riset AI**: Kode sumber ini disediakan secara bebas hanya untuk diinspeksi, dipelajari, dijadikan materi pembelajaran, serta digunakan sebagai acuan pengembangan/riset teknologi kecerdasan buatan (*Artificial Intelligence*).
+2. **Larangan Komersialisasi (Non-Commercial Only)**: Dilarang keras menjual, memperjualbelikan, menyewakan, memonetisasi, atau memanfaatkan mesin ini (maupun seluruh produk turunannya) untuk tujuan bisnis, profit, atau lingkungan enterprise/produksi tanpa izin tertulis resmi dari pemegang hak cipta (**fiqq.rahman**).
+3. **Atribusi Kode (Attribution)**: Setiap karya turunan, adaptasi, riset, atau karya ilmiah yang dibuat berdasarkan proyek ini **wajib** mencantumkan kredit dan atribusi secara jelas kepada pengembang asli (**fiqq.rahman**).
+4. **Bebas Tanggung Jawab (No Warranty)**: Perangkat lunak ini disediakan *"AS IS"* (apa adanya) tanpa jaminan apa pun. Pengembang (**fiqq.rahman**) tidak bertanggung jawab atas timbulnya klaim, kerusakan, atau kerugian lain yang diakibatkan oleh penggunaan mesin ini.
+
 ## Fitur Utama
 
 - Auto Git Diff Targeting: Hanya memindai file aplikasi yang baru diubah atau file baru yang belum di-commit, tanpa membuang kuota token pada berkas bawaan framework/vendor.
