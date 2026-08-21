@@ -60,3 +60,12 @@ audit-code/
 ├── main.py                  # Entry point aplikasi
 ├── requirements.txt         # Daftar dependensi Python
 └── .env                     # Konfigurasi rahasia API Key
+
+---
+
+## Lisensi
+
+Proyek ini dilindungi di bawah **Custom Source-Available License**. Hak Cipta (C) 2026 **fiqq.rahman**. Hak Cipta Dilindungi Undang-Undang (*All Rights Reserved*).
+
+- **Izin Penggunaan**: Kode sumber dalam repositori ini hanya disediakan untuk keperluan peninjauan edukasi, pembelajaran, dan evaluasi portofolio.
+- **Larangan**: Dilarang keras menyalin, memodifikasi, mendistribusikan ulang, menjual, atau menggunakan mesin ini dalam lingkungan produksi/komersial tanpa izin tertulis resmi dari pemegang hak cipta (**fiqq.rahman**).
