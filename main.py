@@ -16,43 +16,29 @@ def main():
         auditor = CodeAuditor()
         git_engine = GitHandler(repo_path=target_repo)
 
-        AuditFormatter.print_info(f"Memindai repositori di: {git_engine.repo_path}")
+        AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
-        # 1. Cek Unstaged Changes
+        # Strictly scan ONLY modified/unstaged files in working tree
         diff_files = git_engine.get_working_tree_diff()
 
-        # 2. Cek Commit biasa jika working tree bersih
         if not diff_files:
             AuditFormatter.print_info(
-                "Working tree bersih. Mengambil perubahan dari COMMIT TERAKHIR..."
-            )
-            try:
-                diff_files = git_engine.get_commit_diff("HEAD~1", "HEAD")
-            except Exception:
-                # 3. Fallback ke Initial Commit
-                AuditFormatter.print_info(
-                    "Mendeteksi Initial Commit. Mengambil patch commit awal..."
-                )
-                try:
-                    diff_files = git_engine.get_initial_commit_diff()
-                except Exception as err:
-                    AuditFormatter.print_error(
-                        f"Gagal mengambil patch commit awal: {str(err)}"
-                    )
-
-        if not diff_files:
-            AuditFormatter.print_info(
-                "Tidak ada diff commit ditemukan pada repositori ini."
+                "Working tree bersih. Tidak ada file yang sedang diubah untuk di-audit."
             )
             return
 
-        # 4. Eksekusi Audit
+        AuditFormatter.print_info(
+            f"Ditemukan {len(diff_files)} berkas yang baru diubah. Memulai audit...\n"
+        )
+
         for item in diff_files:
-            AuditFormatter.print_info(f"Mengaudit file: {item['file_path']}")
+            AuditFormatter.print_info(f"==> Modifikasi Terdeteksi: {item['file_path']}")
             report = auditor.audit_source_code(
                 source_code=item["patch"], file_name=item["file_path"]
             )
-            AuditFormatter.print_section(f"GIT DIFF AUDIT: {item['file_path']}", report)
+            AuditFormatter.print_section(
+                f"MODIFIED FILE AUDIT: {item['file_path']}", report
+            )
 
     except Exception as err:
         AuditFormatter.print_error(f"Eksekusi Audit Gagal: {str(err)}")
