@@ -6,11 +6,11 @@ Engine ini mengintegrasikan standar keamanan global seperti OWASP Top 10, OWASP 
 
 Pengembang: fiqq.rahman
 
----
-
 ## Lisensi
 
 Proyek ini dilindungi di bawah **Educational & AI Research License**. Hak Cipta (C) 2026 **fiqq.rahman**. Hak Cipta Dilindungi Undang-Undang (*All Rights Reserved*).
+
+---
 
 ### Rincian Ketentuan Lisensi:
 1. **Khusus Edukasi & Riset AI**: Kode sumber ini disediakan secara bebas hanya untuk diinspeksi, dipelajari, dijadikan materi pembelajaran, serta digunakan sebagai acuan pengembangan/riset teknologi kecerdasan buatan (*Artificial Intelligence*).
