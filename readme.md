@@ -19,6 +19,30 @@ Pengembang: fiqq.rahman
 
 ---
 
+## Cakupan & Batasan Audit (Scope & Boundaries)
+
+Mesin audit ini difokuskan secara khusus untuk menganalisis ekosistem web backend dan frontend.
+
+### 1. Bahasa Pemrograman & Ekstensi Terdukung
+- **PHP** (`.php`) — Fokus utama: Laravel, CodeIgniter 4, & Native PHP.
+- **JavaScript / TypeScript** (`.js`, `.ts`) — Web Client-side, Node.js, & AJAX/REST API.
+- **Bahasa Lain** (`.py`, `.go`, `.java`, `.c`, `.cpp`).
+
+### 2. Standar OWASP CheatSheet Series yang Diparsing
+Mesin secara spesifik memuat modul referensi keamanan berikut ke dalam basis pengetahuan RAG:
+- **Autentikasi & Akses**: Access Control, Authentication, Authorization, Session Management, IDOR Prevention, Password Storage, Forgot Password, Mass Assignment.
+- **Injeksi & Validasi Input**: SQL Injection Prevention, Query Parameterization, OS Command Injection, LDAP Injection, XML External Entity (XXE), Input Validation, File Upload.
+- **Keamanan Web Client & Browser**: Cross-Site Scripting (XSS), DOM-based XSS, XSS Filter Evasion, CSRF Prevention, Content Security Policy (CSP), DOM Clobbering, Clickjacking, HTML5 Security, Securing CSS, Third-Party JS Management, Prototype Pollution, XS-Leaks.
+- **API & Protocol Security**: REST Security, GraphQL, JSON Web Token (JWT), HTTP Headers, HSTS, SSRF Prevention, Unvalidated Redirects/Forwards, AJAX Security.
+- **Framework & Config Khusus**: Laravel Cheat Sheet, PHP Configuration Cheat Sheet.
+- **Operasional & Ketahanan**: Denial of Service (DoS), Logging.
+
+### 3. Standar Tambahan
+- **OWASP Top 10**: Pemetaan kerentanan kritis tingkat global (A01 Broke Access Control hingga A10 SSRF).
+- **OWASP ASVS v5.0.0**: Verifikasi standar tingkat lanjut untuk arsitektur keamanan aplikasi web.
+
+---
+
 ## Arsitektur Sistem
 
 Mesin bekerja dengan alur kerja berikut:
@@ -59,13 +83,5 @@ audit-code/
 ├── audit.bat                # Wrapper CLI executable untuk Windows
 ├── main.py                  # Entry point aplikasi
 ├── requirements.txt         # Daftar dependensi Python
+├── LICENSE                  # Lisensi penggunaan proyek
 └── .env                     # Konfigurasi rahasia API Key
-
----
-
-## Lisensi
-
-Proyek ini dilindungi di bawah **Educational & AI Research License**. Hak Cipta (C) 2026 **fiqq.rahman**.
-
-- **Izin Penggunaan**: Kode sumber ini terbuka secara khusus untuk dipelajari, dijadikan bahan edukasi, serta digunakan sebagai acuan pengembangan/riset teknologi kecerdasan buatan (Artificial Intelligence).
-- **Larangan Komersialisasi**: Dilara
