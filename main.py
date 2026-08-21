@@ -18,12 +18,11 @@ def main():
 
         AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
-        # Strictly scan ONLY modified/unstaged files in working tree
         diff_files = git_engine.get_working_tree_diff()
 
         if not diff_files:
             AuditFormatter.print_info(
-                "Working tree bersih. Tidak ada file yang sedang diubah untuk di-audit."
+                "Working tree bersih. Tidak ada file yang sedang diubah."
             )
             return
 
@@ -40,6 +39,10 @@ def main():
                 f"MODIFIED FILE AUDIT: {item['file_path']}", report
             )
 
+    except KeyboardInterrupt:
+        print("\n")
+        AuditFormatter.print_error("Proses audit dihentikan oleh pengguna (Ctrl+C).")
+        sys.exit(0)
     except Exception as err:
         AuditFormatter.print_error(f"Eksekusi Audit Gagal: {str(err)}")
 
