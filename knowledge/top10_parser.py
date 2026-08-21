@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 from pypdf import PdfReader
 
-# Meredam log warning internal dari pypdf
 logging.getLogger("pypdf").setLevel(logging.ERROR)
 
 

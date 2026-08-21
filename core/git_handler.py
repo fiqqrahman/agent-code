@@ -44,7 +44,6 @@ class GitHandler:
         diff_files: list[dict[str, str]] = []
         seen_paths: set[str] = set()
 
-        # 1. Cek file yang dimodifikasi (Unstaged Modified)
         for diff_item in self.repo.index.diff(None):
             file_path = diff_item.b_path or diff_item.a_path
             if file_path and self._is_valid_target_file(file_path):
@@ -55,7 +54,6 @@ class GitHandler:
                     )
                     seen_paths.add(str(file_path))
 
-        # 2. Cek file baru yang belum di-track (Untracked)
         for untracked in self.repo.untracked_files:
             if self._is_valid_target_file(untracked) and untracked not in seen_paths:
                 full_path = self.repo_path / untracked

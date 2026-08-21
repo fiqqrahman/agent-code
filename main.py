@@ -18,10 +18,8 @@ def main():
 
         AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
-        # Pindai perubahan lokal (Modified & Untracked)
         diff_files = git_engine.get_working_tree_diff()
 
-        # Fallback ke commit terakhir jika working tree bersih
         if not diff_files:
             AuditFormatter.print_info(
                 "Working tree bersih. Memeriksa file pada COMMIT TERAKHIR..."

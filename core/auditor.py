@@ -9,12 +9,11 @@ from knowledge.top10_parser import OWASPTop10Parser
 from knowledge.asps_parser import OWASPASVSParser
 from core.rule_parser import CustomRuleParser
 
-# Gunakan murni seri Gemini 3.x aktif
 FALLBACK_MODELS = [
-    GEMINI_MODEL_NAME,  # gemini-3.6-flash
-    "gemini-3.1-flash-lite",  # Fallback 1: Ringan & kencang
-    "gemini-3.1-pro-preview",  # Fallback 2: Reasoning tinggi
-    "gemini-3-flash-preview",  # Fallback 3: Preview alternatif
+    GEMINI_MODEL_NAME, 
+    "gemini-3.1-flash-lite",  
+    "gemini-3.1-pro-preview",  
+    "gemini-3-flash-preview",  
 ]
 
 
@@ -87,11 +86,9 @@ class CodeAuditor:
                     last_exception = err
                     err_msg = str(err)
 
-                    # Langsung loncat ke model berikutnya jika 404 (Model tidak ada)
                     if "404" in err_msg or "NOT_FOUND" in err_msg:
                         break
 
-                    # Retry jika server sibuk / rate-limited (503 / 429)
                     if "503" in err_msg or "UNAVAILABLE" in err_msg or "429" in err_msg:
                         if attempt < max_retries:
                             time.sleep(backoff_delay)
