@@ -1,18 +1,23 @@
 import sys
 from rich.console import Console
 from rich.markdown import Markdown
-from rich.style import Style
 from rich.theme import Theme
 
-# Custom Theme: Murni Merah, Hijau, Kuning, Putih
+# Force Theme: Mengeliminasi total Magenta pada Heading Markdown
 custom_theme = Theme(
     {
         "markdown.paragraph": "bold white",
         "markdown.text": "white",
         "markdown.heading": "bold yellow",
+        "markdown.h1": "bold yellow",
+        "markdown.h2": "bold yellow",
+        "markdown.h3": "bold yellow",
+        "markdown.h4": "bold yellow",
         "markdown.code": "bold yellow",
         "markdown.code_block": "bold white",
-        "markdown.item": "white",
+        "markdown.item": "bold yellow",
+        "markdown.item.bullet": "bold yellow",
+        "markdown.item.number": "bold yellow",
         "markdown.bold": "bold yellow",
         "code.keyword": "bold red",
         "code.string": "bold green",
@@ -56,7 +61,6 @@ class AuditFormatter:
         )
         print(f"{cls.COLOR_GREEN}{'=' * 80}{cls.COLOR_RESET}\n")
 
-        # Render Markdown menggunakan tema khusus (Merah, Hijau, Kuning, Putih)
         md = Markdown(content)
         console.print(md)
 

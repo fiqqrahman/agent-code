@@ -10,10 +10,10 @@ from knowledge.asps_parser import OWASPASVSParser
 from core.rule_parser import CustomRuleParser
 
 FALLBACK_MODELS = [
-    GEMINI_MODEL_NAME, 
-    "gemini-3.1-flash-lite",  
-    "gemini-3.1-pro-preview",  
-    "gemini-3-flash-preview",  
+    GEMINI_MODEL_NAME,  # gemini-3.6-flash
+    "gemini-3.1-flash-lite",
+    "gemini-3.1-pro-preview",
+    "gemini-3-flash-preview",
 ]
 
 
@@ -32,34 +32,76 @@ class CodeAuditor:
         self.asvs_parser = OWASPASVSParser()
         self.custom_parser = CustomRuleParser(rule_file_path=custom_rule_path)
 
-    def _build_aggregated_knowledge(self) -> str:
+    def load_and_verify_knowledge_base(self, logger_func=None) -> str:
         knowledge_blocks: list[str] = []
 
+        if logger_func:
+            logger_func(
+                "Memeriksa & memuat berkas panduan keamanan (Knowledge Base)..."
+            )
+
+        # 1. OWASP CheatSheet Series
         try:
             cs_kb = self.cs_parser.load_knowledge_context(max_chars_per_file=1500)
             knowledge_blocks.append(cs_kb)
+            if logger_func:
+                logger_func(
+                    "Pemuatan OWASP CheatSheet Series ................. [ DONE ]"
+                )
         except Exception as err:
-            knowledge_blocks.append(f"[WARN] Failed loading CheatSheets: {err}")
+            if logger_func:
+                logger_func(
+                    f"Pemuatan OWASP CheatSheet Series ................. [ FAILED: {err} ]"
+                )
 
+        # 2. OWASP Top 10 PDF
         try:
             top10_kb = self.top10_parser.load_pdf_knowledge_base(
                 max_chars_per_file=2000
             )
             knowledge_blocks.append(top10_kb)
+            if logger_func:
+                logger_func(
+                    "Pemuatan OWASP Top 10 Document ................... [ DONE ]"
+                )
         except Exception as err:
-            knowledge_blocks.append(f"[WARN] Failed loading Top10 PDFs: {err}")
+            if logger_func:
+                logger_func(
+                    f"Pemuatan OWASP Top 10 Document ................... [ FAILED: {err} ]"
+                )
 
+        # 3. OWASP ASVS v5.0.0 JSON
         try:
             asvs_kb = self.asvs_parser.load_asvs_knowledge_base(max_chars_total=8000)
             knowledge_blocks.append(asvs_kb)
+            if logger_func:
+                logger_func(
+                    "Pemuatan OWASP ASVS v5.0.0 Specification ........ [ DONE ]"
+                )
         except Exception as err:
-            knowledge_blocks.append(f"[WARN] Failed loading ASVS JSON: {err}")
+            if logger_func:
+                logger_func(
+                    f"Pemuatan OWASP ASVS v5.0.0 Specification ........ [ FAILED: {err} ]"
+                )
 
+        # 4. Custom Internal SOP Rules
         try:
             custom_kb = self.custom_parser.load_custom_rules()
             knowledge_blocks.append(custom_kb)
+            if logger_func:
+                logger_func(
+                    "Pemuatan SOP Rules & Internal Security Policy .... [ DONE ]"
+                )
         except Exception as err:
-            knowledge_blocks.append(f"[WARN] Failed loading Custom Rules: {err}")
+            if logger_func:
+                logger_func(
+                    f"Pemuatan SOP Rules & Internal Security Policy .... [ FAILED: {err} ]"
+                )
+
+        if logger_func:
+            logger_func(
+                "Seluruh sumber pedoman keamanan berhasil dimuat secara optimal.\n"
+            )
 
         return "\n\n".join(knowledge_blocks)
 
@@ -101,21 +143,24 @@ class CodeAuditor:
             f"Seluruh model Gemini sibuk/gagal setelah retry. Error terakhir: {str(last_exception)}"
         )
 
-    def audit_source_code(self, source_code: str, file_name: str = "snippet.py") -> str:
-        knowledge_context = self._build_aggregated_knowledge()
-
+    def audit_source_code(
+        self,
+        source_code: str,
+        file_name: str = "snippet.py",
+        knowledge_context: str = "",
+    ) -> str:
         system_instruction = (
             "Ente adalah Senior Cybersecurity Auditor dan Principal Software Engineer. "
-            "Tugas ente adalah melakukan security code review secara ketat berdasarkan "
-            "OWASP CheatSheet Series, OWASP Top 10, OWASP ASVS v5.0.0, dan Aturan Internal.\n\n"
+            "Tugas ente adalah melakukan security code review secara terperinci, mendalam, dan komprehensif "
+            "berdasarkan OWASP CheatSheet Series, OWASP Top 10, OWASP ASVS v5.0.0, dan Aturan SOP Internal.\n\n"
             "Gunakan referensi Knowledge Base berikut sebagai standar audit utama:\n"
             f"{knowledge_context}\n\n"
-            "Format Laporan Audit harus mencakup:\n"
-            "1. Ringkasan Kerentanan (Temuan, Severity Level, Dampak)\n"
-            "2. Analisis Forensik Baris Kode (Baris bermasalah & penyebab teknis)\n"
-            "3. Pelanggaran Standar OWASP / ASVS / Internal SOP\n"
-            "4. Refactoring Kode Aman (Tulis kode perbaikan tanpa komentar berlebih, modular, & aman)\n"
-            "5. Mitigasi tambahan / Rekomendasi Arsitektur"
+            "Format Laporan Audit Wajib Terstruktur Terperinci:\n"
+            "1. Ringkasan Kerentanan (Sajikan tabel komprehensif berisi No, Temuan/Komponen, Severity Level, dan Dampak Keamanan terperinci)\n"
+            "2. Analisis Forensik Baris Kode (Uraikan satu per satu setiap temuan secara detail, sertakan nomor baris, penyebab teknis, dan vektor serangan)\n"
+            "3. Pelanggaran Standar OWASP / ASVS / SOP Internal (Sebutkan pasal/kategori OWASP Top 10 / ASVS yang dilanggar secara eksplisit)\n"
+            "4. Refactoring Kode Aman (Tuliskan perbaikan kode utuh secara modular, aman, dan efisien tanpa komentar berlebih)\n"
+            "5. Mitigasi Tambahan / Rekomendasi Arsitektur (Berikan panduan langkah hardened secara terstruktur)"
         )
 
         prompt = f"Lakukan audit keamanan pada berkas `{file_name}` berikut:\n\n```\n{source_code}\n```"

@@ -18,6 +18,11 @@ def main():
 
         AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
+        # Panggil verifikasi pemuatan seluruh pedoman keamanan (Knowledge Base)
+        knowledge_context = auditor.load_and_verify_knowledge_base(
+            logger_func=AuditFormatter.print_info
+        )
+
         diff_files = git_engine.get_working_tree_diff()
 
         if not diff_files:
@@ -39,7 +44,9 @@ def main():
         for item in diff_files:
             AuditFormatter.print_info(f"==> Mengaudit File: {item['file_path']}")
             report = auditor.audit_source_code(
-                source_code=item["patch"], file_name=item["file_path"]
+                source_code=item["patch"],
+                file_name=item["file_path"],
+                knowledge_context=knowledge_context,
             )
             AuditFormatter.print_section(f"AUDIT REPORT: {item['file_path']}", report)
 
