@@ -53,40 +53,54 @@ class OWASPParser:
         self.index_file = self.base_dir / "Index.md"
         self.cheatsheet_dir = self.base_dir / "cheatsheets"
 
-    def _extract_target_files_from_index(self) -> list[Path]:
-        if not self.index_file.exists():
-            raise FileNotFoundError(
-                f"File Index.md tidak ditemukan di: {self.index_file}"
+    def load_knowledge_context_with_stats(
+        self, max_chars_per_file: int = 2500
+    ) -> tuple[str, dict]:
+        stats = {
+            "target_total": len(self.TARGET_CHEATSHEETS),
+            "success_count": 0,
+            "failed_count": 0,
+            "failed_details": [],
+        }
+
+        if not self.base_dir.exists():
+            stats["failed_count"] = len(self.TARGET_CHEATSHEETS)
+            stats["failed_details"].append(
+                ("CheatSheetSeries Path", f"Folder tidak ditemukan di {self.base_dir}")
             )
-
-        index_content = self.index_file.read_text(encoding="utf-8")
-        matches = re.findall(r"\]\((cheatsheets/.*?\.md)\)", index_content)
-
-        selected_files: list[Path] = []
-        for relative_path in matches:
-            filename = Path(relative_path).name
-            if filename in self.TARGET_CHEATSHEETS:
-                full_path = self.base_dir / relative_path
-                if full_path.exists() and full_path not in selected_files:
-                    selected_files.append(full_path)
-
-        return selected_files
-
-    def load_knowledge_context(self, max_chars_per_file: int = 2500) -> str:
-        target_files = self._extract_target_files_from_index()
-
-        if not target_files:
-            raise RuntimeError(
-                "Tidak ada file cheatsheet yang cocok ditemukan dari Index.md!"
-            )
+            return "", stats
 
         knowledge_base: list[str] = []
 
-        for file_path in target_files:
-            content = file_path.read_text(encoding="utf-8")
-            truncated_content = content[:max_chars_per_file]
-            knowledge_base.append(
-                f"=== OWASP RULE: {file_path.name} ===\n{truncated_content}\n"
-            )
+        for filename in self.TARGET_CHEATSHEETS:
+            possible_paths = [
+                self.base_dir / filename,
+                self.cheatsheet_dir / filename,
+            ]
 
-        return "\n".join(knowledge_base)
+            found_path = None
+            for p in possible_paths:
+                if p.exists():
+                    found_path = p
+                    break
+
+            if found_path:
+                try:
+                    content = found_path.read_text(encoding="utf-8", errors="ignore")
+                    truncated_content = content[:max_chars_per_file]
+                    knowledge_base.append(
+                        f"=== OWASP RULE: {found_path.name} ===\n{truncated_content}\n"
+                    )
+                    stats["success_count"] += 1
+                except Exception as err:
+                    stats["failed_count"] += 1
+                    stats["failed_details"].append(
+                        (filename, f"Gagal membaca file: {str(err)}")
+                    )
+            else:
+                stats["failed_count"] += 1
+                stats["failed_details"].append(
+                    (filename, "File .md tidak ditemukan pada lokasi target")
+                )
+
+        return "\n".join(knowledge_base), stats

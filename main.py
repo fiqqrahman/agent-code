@@ -18,7 +18,6 @@ def main():
 
         AuditFormatter.print_info(f"Target Repositori: {git_engine.repo_path}")
 
-        # Panggil verifikasi pemuatan seluruh pedoman keamanan (Knowledge Base)
         knowledge_context = auditor.load_and_verify_knowledge_base(
             logger_func=AuditFormatter.print_info
         )

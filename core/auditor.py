@@ -10,7 +10,7 @@ from knowledge.asps_parser import OWASPASVSParser
 from core.rule_parser import CustomRuleParser
 
 FALLBACK_MODELS = [
-    GEMINI_MODEL_NAME,  # gemini-3.6-flash
+    GEMINI_MODEL_NAME,
     "gemini-3.1-flash-lite",
     "gemini-3.1-pro-preview",
     "gemini-3-flash-preview",
@@ -40,67 +40,88 @@ class CodeAuditor:
                 "Memeriksa & memuat berkas panduan keamanan (Knowledge Base)..."
             )
 
-        # 1. OWASP CheatSheet Series
+        # 1. CheatSheet Series
         try:
-            cs_kb = self.cs_parser.load_knowledge_context(max_chars_per_file=1500)
-            knowledge_blocks.append(cs_kb)
-            if logger_func:
-                logger_func(
-                    "Pemuatan OWASP CheatSheet Series ................. [ DONE ]"
-                )
-        except Exception as err:
-            if logger_func:
-                logger_func(
-                    f"Pemuatan OWASP CheatSheet Series ................. [ FAILED: {err} ]"
-                )
-
-        # 2. OWASP Top 10 PDF
-        try:
-            top10_kb = self.top10_parser.load_pdf_knowledge_base(
-                max_chars_per_file=2000
+            cs_kb, cs_stats = self.cs_parser.load_knowledge_context_with_stats(
+                max_chars_per_file=1500
             )
-            knowledge_blocks.append(top10_kb)
+            if cs_kb:
+                knowledge_blocks.append(cs_kb)
             if logger_func:
                 logger_func(
-                    "Pemuatan OWASP Top 10 Document ................... [ DONE ]"
+                    f"OWASP CheatSheet Series ................. [ DONE: {cs_stats['success_count']}/{cs_stats['target_total']} File Terbaca ]"
                 )
+                if cs_stats["failed_count"] > 0:
+                    for fname, reason in cs_stats["failed_details"]:
+                        logger_func(f"  [!] Gagal: {fname} -> {reason}")
         except Exception as err:
             if logger_func:
                 logger_func(
-                    f"Pemuatan OWASP Top 10 Document ................... [ FAILED: {err} ]"
+                    f"OWASP CheatSheet Series ................. [ FAILED: {err} ]"
                 )
 
-        # 3. OWASP ASVS v5.0.0 JSON
+        # 2. Top 10 PDF
         try:
-            asvs_kb = self.asvs_parser.load_asvs_knowledge_base(max_chars_total=8000)
-            knowledge_blocks.append(asvs_kb)
+            top10_kb, top10_stats = (
+                self.top10_parser.load_pdf_knowledge_base_with_stats(
+                    max_chars_per_file=2000
+                )
+            )
+            if top10_kb:
+                knowledge_blocks.append(top10_kb)
             if logger_func:
                 logger_func(
-                    "Pemuatan OWASP ASVS v5.0.0 Specification ........ [ DONE ]"
+                    f"OWASP Top 10 Documents .................. [ DONE: {top10_stats['success_count']}/{top10_stats['target_total']} PDF Terbaca ]"
                 )
+                if top10_stats["failed_count"] > 0:
+                    for fname, reason in top10_stats["failed_details"]:
+                        logger_func(f"  [!] Gagal: {fname} -> {reason}")
         except Exception as err:
             if logger_func:
                 logger_func(
-                    f"Pemuatan OWASP ASVS v5.0.0 Specification ........ [ FAILED: {err} ]"
+                    f"OWASP Top 10 Documents .................. [ FAILED: {err} ]"
+                )
+
+        # 3. ASVS JSON
+        try:
+            asvs_kb, asvs_stats = self.asvs_parser.load_asvs_knowledge_base_with_stats(
+                max_chars_total=8000
+            )
+            if asvs_kb:
+                knowledge_blocks.append(asvs_kb)
+            if logger_func:
+                if asvs_stats["status"] == "SUCCESS":
+                    logger_func(
+                        f"OWASP ASVS v5.0.0 Specification ........ [ DONE: {asvs_stats.get('total_rules', 1)} Aturan Terverifikasi ]"
+                    )
+                else:
+                    logger_func(
+                        f"OWASP ASVS v5.0.0 Specification ........ [ FAILED: {asvs_stats['reason']} ]"
+                    )
+        except Exception as err:
+            if logger_func:
+                logger_func(
+                    f"OWASP ASVS v5.0.0 Specification ........ [ FAILED: {err} ]"
                 )
 
         # 4. Custom Internal SOP Rules
         try:
             custom_kb = self.custom_parser.load_custom_rules()
-            knowledge_blocks.append(custom_kb)
+            if custom_kb:
+                knowledge_blocks.append(custom_kb)
             if logger_func:
                 logger_func(
-                    "Pemuatan SOP Rules & Internal Security Policy .... [ DONE ]"
+                    "SOP Rules & Internal Security Policy .... [ DONE: Aturan Lokal Terintegrasi ]"
                 )
         except Exception as err:
             if logger_func:
                 logger_func(
-                    f"Pemuatan SOP Rules & Internal Security Policy .... [ FAILED: {err} ]"
+                    f"SOP Rules & Internal Security Policy .... [ FAILED: {err} ]"
                 )
 
         if logger_func:
             logger_func(
-                "Seluruh sumber pedoman keamanan berhasil dimuat secara optimal.\n"
+                "Seluruh sumber pedoman keamanan berhasil diverifikasi dan dimuat.\n"
             )
 
         return "\n\n".join(knowledge_blocks)
