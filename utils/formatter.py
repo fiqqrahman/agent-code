@@ -1,5 +1,10 @@
 import sys
-import textwrap
+from rich.console import Console
+from rich.markdown import Markdown
+from rich.panel import Panel
+from rich.text import Text
+
+console = Console()
 
 
 class AuditFormatter:
@@ -28,65 +33,25 @@ class AuditFormatter:
         print(banner)
 
     @classmethod
-    def _format_content(cls, raw_content: str, width: int = 80) -> str:
-        formatted_lines = []
-        lines = raw_content.splitlines()
-
-        for line in lines:
-            wrapped = textwrap.fill(line, width=width) if len(line) > width else line
-
-            upper_line = wrapped.upper()
-            if any(
-                k in upper_line
-                for k in [
-                    "CRITICAL",
-                    "HIGH",
-                    "KERENTANAN",
-                    "BAHAYA",
-                    "VULNERABILITY",
-                    "ERROR",
-                ]
-            ):
-                formatted_lines.append(
-                    f"{cls.COLOR_RED}{cls.COLOR_BOLD}{wrapped}{cls.COLOR_RESET}"
-                )
-            elif any(
-                k in upper_line
-                for k in [
-                    "LOW",
-                    "SAFE",
-                    "AMAN",
-                    "REKOMENDASI",
-                    "REFACTORED",
-                    "FIXED",
-                ]
-            ):
-                formatted_lines.append(
-                    f"{cls.COLOR_GREEN}{cls.COLOR_BOLD}{wrapped}{cls.COLOR_RESET}"
-                )
-            else:
-                formatted_lines.append(f"{cls.COLOR_WHITE}{wrapped}{cls.COLOR_RESET}")
-
-        return "\n".join(formatted_lines)
-
-    @classmethod
     def print_section(cls, title: str, content: str) -> None:
-        border = "=" * 80
-        print(f"\n{cls.COLOR_GREEN}{border}{cls.COLOR_RESET}")
+        print(f"\n{cls.COLOR_GREEN}{'=' * 80}{cls.COLOR_RESET}")
         print(
-            f"{cls.COLOR_BOLD}{cls.COLOR_WHITE}[ REPORT ] » {title.upper()}{cls.COLOR_RESET}"
+            f"{cls.COLOR_BOLD}{cls.COLOR_WHITE}[ AUDIT REPORT ] » {title.upper()}{cls.COLOR_RESET}"
         )
-        print(f"{cls.COLOR_GREEN}{border}{cls.COLOR_RESET}\n")
-        print(cls._format_content(content))
-        print(f"\n{cls.COLOR_GREEN}{border}{cls.COLOR_RESET}\n")
+        print(f"{cls.COLOR_GREEN}{'=' * 80}{cls.COLOR_RESET}\n")
+
+        # Magic: Rich Markdown Renderer otomatis mewarnai sintaksis kode & membuatkan kotak berbingkai!
+        md = Markdown(content)
+        console.print(md)
+
+        print(f"\n{cls.COLOR_GREEN}{'=' * 80}{cls.COLOR_RESET}\n")
 
     @classmethod
     def print_error(cls, message: str) -> None:
-        print(
-            f"{cls.COLOR_RED}{cls.COLOR_BOLD}[ERROR] {message}{cls.COLOR_RESET}",
-            file=sys.stderr,
-        )
+        console.print(f"[bold red][ERROR][/bold red] {message}", highlight=False)
 
     @classmethod
     def print_info(cls, message: str) -> None:
-        print(f"{cls.COLOR_CYAN}{cls.COLOR_BOLD}[INFO] {message}{cls.COLOR_RESET}")
+        console.print(
+            f"[bold bold_cyan][INFO][/bold bold_cyan] {message}", highlight=False
+        )
